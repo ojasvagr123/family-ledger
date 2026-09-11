@@ -1,0 +1,12 @@
+import { useState } from 'react';
+import * as Crypto from 'expo-crypto';
+import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { createFamilySchema } from '@family-ledger/contracts';
+import { Screen } from '@/components/ui/screen'; import { AppField } from '@/components/ui/app-field'; import { AppButton } from '@/components/ui/app-button'; import { Notice } from '@/components/ui/notice'; import { Card } from '@/components/ui/card'; import { AppText } from '@/components/ui/app-text'; import { createFamily } from '@/infrastructure/supabase/families'; import { useAuth } from '@/providers/auth-provider';
+
+export default function CreateFamilyScreen() {
+  const { user } = useAuth(); const queryClient = useQueryClient(); const [name, setName] = useState(''); const [startMonth, setStartMonth] = useState('1'); const [year, setYear] = useState(String(new Date().getFullYear())); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
+  async function submit() { const parsed = createFamilySchema.safeParse({ name, currencyCode: 'INR', timezone: 'Asia/Kolkata', fiscalStartMonth: Number(startMonth), reportingStartYear: Number(year), idempotencyKey: Crypto.randomUUID() }); if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? 'Check the form.'); return; } setLoading(true); setError(null); try { await createFamily(parsed.data); await queryClient.invalidateQueries({ queryKey: ['families', user?.id] }); router.replace('/'); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to create family.'); } finally { setLoading(false); } }
+  return <Screen title="Create your family" subtitle="You become the Owner and approve everyone who joins.">{error && <Notice tone="danger" message={error} />}<Card><AppField label="Family name" value={name} onChangeText={setName} placeholder="Sharma family" /><AppField label="Reporting start month (1–12)" value={startMonth} onChangeText={setStartMonth} keyboardType="number-pad" /><AppField label="Reporting start year" value={year} onChangeText={setYear} keyboardType="number-pad" /><Notice message="Defaults: INR, Asia/Kolkata, and editable household categories." /><AppButton label="Create family" onPress={submit} loading={loading} /></Card><AppText muted>Have an invitation? Open its link or use Accept invite after signing in.</AppText><AppButton label="Accept an invitation" kind="secondary" onPress={() => router.push('/(onboarding)/accept-invite')} /></Screen>;
+}

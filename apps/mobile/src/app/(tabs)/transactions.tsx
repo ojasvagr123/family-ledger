@@ -1,0 +1,1 @@
+import { Screen } from '@/components/ui/screen'; import { Notice } from '@/components/ui/notice'; export default function TransactionsScreen() { return <Screen title="Activity" subtitle="Shared household income and expenses"><Notice message="Transaction entry and the virtualized ledger are scheduled for Day 2." /></Screen>; }

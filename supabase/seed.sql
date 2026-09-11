@@ -1,0 +1,2 @@
+-- Production families are created only through create_family().
+-- Test identities and family fixtures belong in isolated database tests, not shared seed data.

@@ -1,0 +1,21 @@
+{
+  "name": "family-ledger",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "mobile": "pnpm --filter @family-ledger/mobile",
+    "start": "pnpm --filter @family-ledger/mobile start",
+    "android": "pnpm --filter @family-ledger/mobile android",
+    "ios": "pnpm --filter @family-ledger/mobile ios",
+    "lint": "pnpm --filter @family-ledger/mobile lint",
+    "typecheck": "pnpm --filter @family-ledger/mobile typecheck",
+    "check": "pnpm lint && pnpm typecheck",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db"
+  },
+  "devDependencies": {
+    "supabase": "^2.117.0"
+  }
+}

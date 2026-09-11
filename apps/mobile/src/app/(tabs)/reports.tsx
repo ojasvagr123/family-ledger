@@ -1,0 +1,1 @@
+import { Screen } from '@/components/ui/screen'; import { Notice } from '@/components/ui/notice'; export default function ReportsScreen() { return <Screen title="Reports" subtitle="Authoritative household totals"><Notice message="The Monthly Report is scheduled for Day 2 after transaction controls pass." /></Screen>; }
