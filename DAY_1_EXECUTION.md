@@ -39,6 +39,7 @@ Status: application implementation complete; automated two-identity database flo
 - Android Metro production export: pass; 1,470 modules bundled to Hermes bytecode.
 - Database reset/reproducibility: pass.
 - Database authorization and two-identity family flow: pass, 29 tests.
+- Local Auth health endpoint: pass (`HTTP 200`).
 
 ## User-provided prerequisites
 
