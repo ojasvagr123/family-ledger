@@ -17,5 +17,6 @@ ios/
 *.p12
 *.mobileprovision
 supabase/.temp/
+supabase/.branches/
 .DS_Store
 Thumbs.db

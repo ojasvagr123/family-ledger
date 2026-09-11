@@ -1,7 +1,7 @@
 create or replace function public.begin_idempotent(p_operation text, p_key uuid, p_request jsonb)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
-  v_hash bytea := digest(p_request::text, 'sha256');
+  v_hash bytea := extensions.digest(p_request::text, 'sha256');
   v_saved public.idempotency_keys%rowtype;
 begin
   if auth.uid() is null then raise exception 'AUTH_REQUIRED' using errcode = 'P0001'; end if;
@@ -93,9 +93,9 @@ begin
   if v_saved is not null then raise exception 'INVITATION_TOKEN_ALREADY_RETURNED' using errcode = 'P0001'; end if;
   if not public.has_family_role(p_family_id, array['OWNER','ADMIN']::public.member_role[]) then raise exception 'FORBIDDEN' using errcode = 'P0001'; end if;
   if p_expires_in_hours not between 1 and 168 or p_max_uses not between 1 and 20 then raise exception 'VALIDATION_FAILED' using errcode = 'P0001'; end if;
-  v_token := replace(replace(replace(encode(gen_random_bytes(32), 'base64'), '+', '-'), '/', '_'), '=', '');
+  v_token := replace(replace(replace(encode(extensions.gen_random_bytes(32), 'base64'), '+', '-'), '/', '_'), '=', '');
   insert into public.invitations(family_id, token_hash, created_by, expires_at, max_uses)
-  values (p_family_id, digest(v_token, 'sha256'), auth.uid(), now() + make_interval(hours => p_expires_in_hours), p_max_uses)
+  values (p_family_id, extensions.digest(v_token, 'sha256'), auth.uid(), now() + make_interval(hours => p_expires_in_hours), p_max_uses)
   returning * into v_invite;
   insert into public.audit_events(family_id, actor_user_id, action, entity_type, entity_id, after_data, request_id)
   values (p_family_id, auth.uid(), 'INVITATION_CREATED', 'invitation', v_invite.id, jsonb_build_object('expiresAt', v_invite.expires_at, 'maxUses', v_invite.max_uses), p_idempotency_key);
@@ -112,12 +112,12 @@ declare
   v_invite public.invitations%rowtype;
   v_request_id uuid;
   v_saved jsonb;
-  v_request jsonb := jsonb_build_object('tokenHash', encode(digest(p_token, 'sha256'), 'hex'));
+  v_request jsonb := jsonb_build_object('tokenHash', encode(extensions.digest(p_token, 'sha256'), 'hex'));
   v_response jsonb;
 begin
   v_saved := public.begin_idempotent('request_join', p_idempotency_key, v_request);
   if v_saved is not null then return v_saved; end if;
-  select * into v_invite from public.invitations where token_hash = digest(p_token, 'sha256') for update;
+  select * into v_invite from public.invitations where token_hash = extensions.digest(p_token, 'sha256') for update;
   if not found then raise exception 'INVITE_INVALID' using errcode = 'P0001'; end if;
   if v_invite.revoked_at is not null then raise exception 'INVITE_REVOKED' using errcode = 'P0001'; end if;
   if v_invite.expires_at <= now() then raise exception 'INVITE_EXPIRED' using errcode = 'P0001'; end if;
@@ -205,15 +205,15 @@ begin
 end;
 $$;
 
-revoke all on function public.begin_idempotent(text, uuid, jsonb) from public;
-revoke all on function public.finish_idempotent(text, uuid, jsonb) from public;
-revoke all on function public.list_my_families() from public;
-revoke all on function public.create_family(text, text, text, smallint, smallint, uuid) from public;
-revoke all on function public.create_invitation(uuid, integer, integer, uuid) from public;
-revoke all on function public.request_join(text, uuid) from public;
-revoke all on function public.revoke_invitation(uuid, uuid, uuid) from public;
-revoke all on function public.list_pending_join_requests(uuid) from public;
-revoke all on function public.decide_join_request(uuid, uuid, public.join_request_status, uuid) from public;
+revoke all on function public.begin_idempotent(text, uuid, jsonb) from public, anon, authenticated;
+revoke all on function public.finish_idempotent(text, uuid, jsonb) from public, anon, authenticated;
+revoke all on function public.list_my_families() from public, anon, authenticated;
+revoke all on function public.create_family(text, text, text, smallint, smallint, uuid) from public, anon, authenticated;
+revoke all on function public.create_invitation(uuid, integer, integer, uuid) from public, anon, authenticated;
+revoke all on function public.request_join(text, uuid) from public, anon, authenticated;
+revoke all on function public.revoke_invitation(uuid, uuid, uuid) from public, anon, authenticated;
+revoke all on function public.list_pending_join_requests(uuid) from public, anon, authenticated;
+revoke all on function public.decide_join_request(uuid, uuid, public.join_request_status, uuid) from public, anon, authenticated;
 grant execute on function public.list_my_families() to authenticated;
 grant execute on function public.create_family(text, text, text, smallint, smallint, uuid) to authenticated;
 grant execute on function public.create_invitation(uuid, integer, integer, uuid) to authenticated;

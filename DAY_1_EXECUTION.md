@@ -14,7 +14,7 @@ Status: complete.
 
 ## Phase 2 — Secure backend foundation
 
-Status: implementation complete; local execution waits for Docker Desktop.
+Status: complete and verified against local Supabase.
 
 - Added ordered PostgreSQL migrations for profiles, families, memberships, invitations, join requests, categories, accounts, transactions, audit events, and idempotency records.
 - Added tenant-safe composite foreign keys, indexes, default-deny RLS, restricted grants, hashed invitation tokens, audit writes, and idempotent security-definer RPCs.
@@ -22,7 +22,7 @@ Status: implementation complete; local execution waits for Docker Desktop.
 
 ## Phase 3 — Family vertical slice
 
-Status: application implementation complete; two-device integration waits for a running Supabase instance.
+Status: application implementation complete; automated two-identity database flow verified.
 
 - Implemented passwordless email sign-in and callback handling.
 - Implemented family creation with default Indian categories, currency/timezone defaults, and family switching.
@@ -37,15 +37,15 @@ Status: application implementation complete; two-device integration waits for a 
 - ESLint: pass (`pnpm --filter @family-ledger/mobile lint`).
 - Expo public config: pass; SDK 57, Android/iOS only, identifiers and native plugins resolved.
 - Android Metro production export: pass; 1,470 modules bundled to Hermes bytecode.
-- Database reset/RLS integration: pending because the local Docker Windows service is stopped.
+- Database reset/reproducibility: pass.
+- Database authorization and two-identity family flow: pass, 29 tests.
 
 ## User-provided prerequisites
 
-Needed now:
+Needed for physical-device validation:
 
-1. Open Docker Desktop and wait until its engine reports running.
-2. Either use the local Supabase instance or create a hosted Supabase project, then place `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `apps/mobile/.env`.
-3. Provide two test email addresses/accounts for the Owner/Member approval test. They can be entered directly on the devices and do not need to be committed.
+1. Keep Docker Desktop running while using local Supabase.
+2. Provide two test email addresses/accounts for the Owner/Member approval test. They can be entered directly on the devices and do not need to be committed.
 
 Needed before Sunday deployment:
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Share } from 'react-native';
 import * as Crypto from 'expo-crypto';
+import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { createInvitationSchema, revokeInvitationSchema } from '@family-ledger/contracts';
 import { AppButton } from '@/components/ui/app-button';
@@ -25,7 +26,8 @@ export default function InvitationsScreen() {
     try {
       const invite = await createInvitation(input);
       setInvitationId(invite.invitationId);
-      setLink(`${env?.inviteOrigin ?? 'https://invite.example.com'}/invite/${encodeURIComponent(invite.token)}`);
+      const route = `/invite/${encodeURIComponent(invite.token)}`;
+      setLink(env?.appEnv === 'development' ? Linking.createURL(route) : `${env?.inviteOrigin ?? 'https://invite.example.com'}${route}`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to create invitation.'); }
     finally { setLoading(false); }
   }

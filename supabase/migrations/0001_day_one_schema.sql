@@ -174,6 +174,8 @@ $$;
 create trigger auth_user_profile after insert on auth.users
 for each row execute function public.handle_new_user();
 
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
 create or replace function public.is_active_member(p_family_id uuid)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists(select 1 from public.family_members m where m.family_id = p_family_id and m.user_id = auth.uid() and m.status = 'ACTIVE');
@@ -203,10 +205,12 @@ create policy categories_active_select on public.categories for select to authen
 create policy accounts_active_select on public.accounts for select to authenticated using (public.is_active_member(family_id));
 create policy transactions_active_select on public.transactions for select to authenticated using (public.is_active_member(family_id));
 
-revoke all on public.audit_events from anon, authenticated;
-revoke all on public.idempotency_keys from anon, authenticated;
+revoke all on public.profiles, public.families, public.family_members, public.invitations,
+  public.join_requests, public.categories, public.accounts, public.transactions,
+  public.audit_events, public.idempotency_keys from anon, authenticated;
 grant select on public.profiles, public.families, public.family_members, public.categories, public.accounts, public.transactions to authenticated;
-revoke all on function public.is_active_member(uuid) from public;
-revoke all on function public.has_family_role(uuid, public.member_role[]) from public;
+grant update on public.profiles to authenticated;
+revoke all on function public.is_active_member(uuid) from public, anon, authenticated;
+revoke all on function public.has_family_role(uuid, public.member_role[]) from public, anon, authenticated;
 grant execute on function public.is_active_member(uuid) to authenticated;
 grant execute on function public.has_family_role(uuid, public.member_role[]) to authenticated;
