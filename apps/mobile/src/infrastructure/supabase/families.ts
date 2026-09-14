@@ -2,6 +2,12 @@ import type { CreateFamilyInput, CreateInvitationInput, DecideJoinRequestInput, 
 import { requireSupabase } from './client';
 import type { FamilySummary, JoinRequestSummary } from './types';
 
+export type FamilyMemberSummary = {
+  user_id: string;
+  display_name: string;
+  role: string;
+};
+
 function unwrap<T>(data: T | null, error: { message: string } | null): T {
   if (error) throw new Error(error.message);
   if (data == null) throw new Error('EMPTY_RESPONSE');
@@ -43,6 +49,11 @@ export async function requestJoin(input: RequestJoinInput) {
 export async function listPendingJoinRequests(familyId: string): Promise<JoinRequestSummary[]> {
   const { data, error } = await requireSupabase().rpc('list_pending_join_requests', { p_family_id: familyId });
   return unwrap(data as JoinRequestSummary[] | null, error);
+}
+
+export async function listFamilyMembers(familyId: string): Promise<FamilyMemberSummary[]> {
+  const { data, error } = await requireSupabase().rpc('list_family_members', { p_family_id: familyId });
+  return unwrap(data as FamilyMemberSummary[] | null, error);
 }
 
 export async function decideJoinRequest(input: DecideJoinRequestInput) {

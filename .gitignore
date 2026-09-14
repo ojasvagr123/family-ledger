@@ -9,6 +9,7 @@ node_modules/
 dist/
 dist-*/
 coverage/
+artifacts/
 android/
 ios/
 *.jks
@@ -20,3 +21,6 @@ supabase/.temp/
 supabase/.branches/
 .DS_Store
 Thumbs.db
+**/node_modules.codex-*/
+**/android.codex-stale/
+.pnpm-short/

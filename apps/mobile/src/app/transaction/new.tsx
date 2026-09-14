@@ -1,1 +1,2 @@
-import { router } from 'expo-router'; import { Screen } from '@/components/ui/screen'; import { Notice } from '@/components/ui/notice'; import { AppButton } from '@/components/ui/app-button'; export default function NewTransactionScreen() { return <Screen title="Add transaction"><Notice message="The secure income/expense form is implemented in Day 2." /><AppButton label="Back" kind="secondary" onPress={() => router.back()} /></Screen>; }
+import { TransactionForm } from '@/components/transaction-form';
+export default function NewTransactionScreen() { return <TransactionForm />; }

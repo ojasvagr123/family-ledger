@@ -2,6 +2,11 @@ packages:
   - "apps/*"
   - "packages/*"
 
+autoInstallPeers: false
+
+# Local Windows build workaround: keep native dependency paths under 260 characters.
+virtualStoreDir: C:/fl-pnpm
+
 allowBuilds:
   unrs-resolver: set this to true or false
 

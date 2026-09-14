@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export type { Database } from './database';
 
 export const uuidSchema = z.uuid();
 
@@ -41,3 +42,8 @@ export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;
 export type RequestJoinInput = z.infer<typeof requestJoinSchema>;
 export type DecideJoinRequestInput = z.infer<typeof decideJoinRequestSchema>;
 export type RevokeInvitationInput = z.infer<typeof revokeInvitationSchema>;
+
+export const minorAmountSchema = z.string().regex(/^[0-9]{1,15}$/).refine((value) => BigInt(value) > 0n, 'Amount must be positive');
+export const accountSchema = z.object({ familyId: uuidSchema, name: z.string().trim().min(1).max(80), accountType: z.enum(['CASH','SAVINGS','CURRENT','CREDIT_CARD','WALLET','OTHER']), openingDate: z.iso.date(), balanceMinor: z.string().regex(/^-?[0-9]{1,15}$/), idempotencyKey: uuidSchema });
+export const saveTransactionSchema = z.object({ familyId: uuidSchema, transactionId: uuidSchema.nullable(), expectedVersion: z.number().int().positive().nullable(), type: z.enum(['INCOME','EXPENSE']), localDate: z.iso.date(), amountMinor: minorAmountSchema, accountId: uuidSchema, categoryId: uuidSchema, description: z.string().trim().max(240), remarks: z.string().trim().max(2000), idempotencyKey: uuidSchema });
+export const deleteTransactionSchema = z.object({ familyId: uuidSchema, transactionId: uuidSchema, expectedVersion: z.number().int().positive(), deleted: z.boolean(), idempotencyKey: uuidSchema });

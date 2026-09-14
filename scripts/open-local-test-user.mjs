@@ -1,0 +1,12 @@
+import { spawnSync, execFileSync } from 'node:child_process';
+import { createClient } from '../apps/mobile/node_modules/@supabase/supabase-js/dist/index.mjs';
+const email = process.argv[2];
+if (!/^codex-(owner|member)-\d+@example\.test$/.test(email ?? '')) throw new Error('Only local QA identities created by local-integration.mjs are supported.');
+const result = spawnSync('cmd.exe', ['/d','/s','/c','node_modules\\.bin\\supabase.cmd status --output json'], { encoding: 'utf8' });
+if(result.status !== 0) throw new Error('Local Supabase is not ready.');
+const status = JSON.parse(result.stdout.slice(result.stdout.indexOf('{')));
+if(new URL(status.API_URL).hostname !== '127.0.0.1') throw new Error('Local backend required.');
+const admin = createClient(status.API_URL,status.SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+const link = await admin.auth.admin.generateLink({type:'magiclink',email}); if(link.error)throw link.error;
+execFileSync('C:\\Users\\lenovo\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe',['shell','am','start','-n','com.familyledger.app/.MainActivity','-a','android.intent.action.VIEW','-d',`familyledger:///auth-callback?token_hash=${link.data.properties.hashed_token}`],{stdio:'ignore'});
+console.log('Opened the local QA sign-in callback on Android.');

@@ -11,9 +11,10 @@
       ]
     }
   },
+  "exclude": ["node_modules", "node_modules.codex-long", "node_modules.codex-x", "android", "android.codex-stale"],
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]

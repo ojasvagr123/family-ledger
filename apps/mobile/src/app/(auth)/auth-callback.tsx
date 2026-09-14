@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { AppText } from '@/components/ui/app-text';
 import { Notice } from '@/components/ui/notice';
 import { Screen } from '@/components/ui/screen';
 import { getPendingInvite } from '@/infrastructure/deep-links/pending-invite';
 import { requireSupabase } from '@/infrastructure/supabase/client';
+import { AppButton } from '@/components/ui/app-button';
 
 export default function AuthCallbackScreen() {
   const params = useLocalSearchParams<{ token_hash?: string; type?: string; code?: string }>();
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     void (async () => {
       try {
         const client = requireSupabase();
@@ -27,5 +31,5 @@ export default function AuthCallbackScreen() {
       }
     })();
   }, [params.code, params.token_hash, params.type]);
-  return <Screen title="Signing you in">{error ? <Notice tone="danger" message={error} /> : <AppText muted>Verifying your secure link…</AppText>}</Screen>;
+  return <Screen title="Signing you in">{error ? <><Notice tone="danger" message={error} /><AppButton label="Request a new sign-in email" onPress={() => router.replace('/(auth)/sign-in')} /></> : <AppText muted>Verifying your secure link…</AppText>}</Screen>;
 }
