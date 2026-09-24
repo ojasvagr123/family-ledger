@@ -12,49 +12,115 @@ export type Database = {
       accounts: {
         Row: {
           account_type: string
+          actual_balance_minor: number | null
           archived_at: string | null
           beginning_balance_minor: number
           created_at: string
           created_by: string
+          display_credit_as_positive: boolean
           family_id: string
           id: string
+          institution: string | null
           name: string
           normalized_name: string | null
           opening_date: string
+          sort_order: number
+          last_checked_date: string | null
           updated_at: string
           version: number
         }
         Insert: {
           account_type?: string
+          actual_balance_minor?: number | null
           archived_at?: string | null
           beginning_balance_minor?: number
           created_at?: string
           created_by: string
+          display_credit_as_positive?: boolean
           family_id: string
           id?: string
+          institution?: string | null
           name: string
           normalized_name?: string | null
           opening_date: string
+          sort_order?: number
+          last_checked_date?: string | null
           updated_at?: string
           version?: number
         }
         Update: {
           account_type?: string
+          actual_balance_minor?: number | null
           archived_at?: string | null
           beginning_balance_minor?: number
           created_at?: string
           created_by?: string
+          display_credit_as_positive?: boolean
           family_id?: string
           id?: string
+          institution?: string | null
           name?: string
           normalized_name?: string | null
           opening_date?: string
+          sort_order?: number
+          last_checked_date?: string | null
           updated_at?: string
           version?: number
         }
         Relationships: [
           {
             foreignKeyName: "accounts_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_reconciliations: {
+        Row: {
+          account_id: string
+          actual_balance_minor: number
+          checked_on: string
+          created_at: string
+          created_by: string
+          difference_minor: number
+          expected_balance_minor: number
+          family_id: string
+          id: string
+        }
+        Insert: {
+          account_id: string
+          actual_balance_minor: number
+          checked_on: string
+          created_at?: string
+          created_by: string
+          difference_minor: number
+          expected_balance_minor: number
+          family_id: string
+          id?: string
+        }
+        Update: {
+          account_id?: string
+          actual_balance_minor?: number
+          checked_on?: string
+          created_at?: string
+          created_by?: string
+          difference_minor?: number
+          expected_balance_minor?: number
+          family_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_reconciliations_family_id_account_id_fkey"
+            columns: ["family_id", "account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["family_id", "id"]
+          },
+          {
+            foreignKeyName: "account_reconciliations_family_id_fkey"
             columns: ["family_id"]
             isOneToOne: false
             referencedRelation: "families"
@@ -112,6 +178,7 @@ export type Database = {
       categories: {
         Row: {
           archived_at: string | null
+          color: string | null
           created_at: string
           created_by: string
           family_id: string
@@ -124,6 +191,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          color?: string | null
           created_at?: string
           created_by: string
           family_id: string
@@ -136,6 +204,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          color?: string | null
           created_at?: string
           created_by?: string
           family_id?: string
@@ -160,9 +229,13 @@ export type Database = {
         Row: {
           created_at: string
           currency_code: string
+          currency_symbol: string
           fiscal_start_month: number
           id: string
           name: string
+          notes: string
+          notes_updated_at: string | null
+          notes_updated_by: string | null
           owner_user_id: string
           reporting_start_year: number
           timezone: string
@@ -172,9 +245,13 @@ export type Database = {
         Insert: {
           created_at?: string
           currency_code?: string
+          currency_symbol?: string
           fiscal_start_month?: number
           id?: string
           name: string
+          notes?: string
+          notes_updated_at?: string | null
+          notes_updated_by?: string | null
           owner_user_id: string
           reporting_start_year: number
           timezone?: string
@@ -184,9 +261,13 @@ export type Database = {
         Update: {
           created_at?: string
           currency_code?: string
+          currency_symbol?: string
           fiscal_start_month?: number
           id?: string
           name?: string
+          notes?: string
+          notes_updated_at?: string | null
+          notes_updated_by?: string | null
           owner_user_id?: string
           reporting_start_year?: number
           timezone?: string
@@ -271,6 +352,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      import_batches: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          family_id: string
+          file_sha256: string | null
+          filename: string
+          id: string
+          imported_rows: number
+          mapping: Json
+          rolled_back_at: string | null
+          skipped_rows: number
+          status: string
+          total_rows: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          family_id: string
+          file_sha256?: string | null
+          filename: string
+          id?: string
+          imported_rows?: number
+          mapping?: Json
+          rolled_back_at?: string | null
+          skipped_rows?: number
+          status?: string
+          total_rows?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          family_id?: string
+          file_sha256?: string | null
+          filename?: string
+          id?: string
+          imported_rows?: number
+          mapping?: Json
+          rolled_back_at?: string | null
+          skipped_rows?: number
+          status?: string
+          total_rows?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batches_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invitations: {
         Row: {
@@ -367,8 +504,53 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          event_type: string
+          family_id: string
+          id: string
+          read_at: string | null
+          recipient_user_id: string
+          route: string | null
+          title: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          event_type: string
+          family_id: string
+          id?: string
+          read_at?: string | null
+          recipient_user_id: string
+          route?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          event_type?: string
+          family_id?: string
+          id?: string
+          read_at?: string | null
+          recipient_user_id?: string
+          route?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           display_name: string
           locale: string
@@ -377,6 +559,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           display_name: string
           locale?: string
@@ -385,6 +568,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string
           locale?: string
@@ -405,8 +589,14 @@ export type Database = {
           description: string
           family_id: string
           id: string
+          import_batch_id: string | null
+          import_fingerprint: string | null
+          import_row_number: number | null
           local_date: string
+          paid_by_user_id: string | null
+          received_by_user_id: string | null
           remarks: string
+          transfer_group_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           updated_by: string
@@ -422,8 +612,14 @@ export type Database = {
           description?: string
           family_id: string
           id?: string
+          import_batch_id?: string | null
+          import_fingerprint?: string | null
+          import_row_number?: number | null
           local_date: string
+          paid_by_user_id?: string | null
+          received_by_user_id?: string | null
           remarks?: string
+          transfer_group_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           updated_by: string
@@ -439,8 +635,14 @@ export type Database = {
           description?: string
           family_id?: string
           id?: string
+          import_batch_id?: string | null
+          import_fingerprint?: string | null
+          import_row_number?: number | null
           local_date?: string
+          paid_by_user_id?: string | null
+          received_by_user_id?: string | null
           remarks?: string
+          transfer_group_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           updated_by?: string
@@ -479,6 +681,17 @@ export type Database = {
         Args: { p_key: string; p_operation: string; p_request: Json }
         Returns: Json
       }
+      begin_import_batch: {
+        Args: {
+          p_family_id: string
+          p_filename: string
+          p_file_sha256: string
+          p_idempotency_key: string
+          p_mapping: Json
+          p_total_rows: number
+        }
+        Returns: Json
+      }
       create_account: {
         Args: {
           p_account_type: string
@@ -490,9 +703,51 @@ export type Database = {
         }
         Returns: Json
       }
+      create_account_extended: {
+        Args: {
+          p_account_type: string
+          p_balance_minor: string
+          p_display_credit_as_positive: boolean
+          p_family_id: string
+          p_idempotency_key: string
+          p_institution: string
+          p_name: string
+          p_opening_date: string
+          p_sort_order: number
+        }
+        Returns: Json
+      }
+      create_account_transfer: {
+        Args: {
+          p_amount_minor: string
+          p_description: string
+          p_family_id: string
+          p_from_account_id: string
+          p_idempotency_key: string
+          p_local_date: string
+          p_remarks: string
+          p_to_account_id: string
+        }
+        Returns: Json
+      }
+      create_category_extended: {
+        Args: {
+          p_color: string
+          p_family_id: string
+          p_idempotency_key: string
+          p_name: string
+          p_type: Database["public"]["Enums"]["category_type"]
+        }
+        Returns: Json
+      }
+      create_demo_family: {
+        Args: { p_idempotency_key: string }
+        Returns: Json
+      }
       create_family: {
         Args: {
           p_currency_code: string
+          p_currency_symbol: string
           p_fiscal_start_month: number
           p_idempotency_key: string
           p_name: string
@@ -519,6 +774,22 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_unused_category: {
+        Args: {
+          p_category_id: string
+          p_family_id: string
+          p_idempotency_key: string
+        }
+        Returns: Json
+      }
+      finish_import_batch: {
+        Args: {
+          p_batch_id: string
+          p_cancelled: boolean
+          p_family_id: string
+        }
+        Returns: Json
+      }
       finish_idempotent: {
         Args: { p_key: string; p_operation: string; p_response: Json }
         Returns: undefined
@@ -530,13 +801,40 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_family_notes: { Args: { p_family_id: string }; Returns: Json }
+      get_my_profile: { Args: never; Returns: Json }
+      import_batch_transaction: {
+        Args: {
+          p_account_id: string
+          p_amount_minor: string
+          p_batch_id: string
+          p_category_id: string
+          p_description: string
+          p_family_id: string
+          p_fingerprint: string
+          p_idempotency_key: string
+          p_local_date: string
+          p_remarks: string
+          p_row_number: number
+          p_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Returns: Json
+      }
       inspect_invitation: { Args: { p_token: string }; Returns: Json }
       is_active_member: { Args: { p_family_id: string }; Returns: boolean }
+      leave_family: {
+        Args: { p_family_id: string; p_idempotency_key: string }
+        Returns: Json
+      }
       ledger_json: {
         Args: { p_row: Database["public"]["Tables"]["transactions"]["Row"] }
         Returns: Json
       }
       list_accounts: { Args: { p_family_id: string }; Returns: Json }
+      list_account_reconciliations: {
+        Args: { p_account_id: string; p_family_id: string }
+        Returns: Database["public"]["Tables"]["account_reconciliations"]["Row"][]
+      }
       list_family_members: {
         Args: { p_family_id: string }
         Returns: {
@@ -550,6 +848,7 @@ export type Database = {
         Args: never
         Returns: {
           currency_code: string
+          currency_symbol: string
           fiscal_start_month: number
           id: string
           name: string
@@ -558,6 +857,14 @@ export type Database = {
           timezone: string
           version: number
         }[]
+      }
+      list_import_batches: {
+        Args: { p_family_id: string }
+        Returns: Database["public"]["Tables"]["import_batches"]["Row"][]
+      }
+      list_my_notifications: {
+        Args: { p_limit?: number }
+        Returns: Database["public"]["Tables"]["notifications"]["Row"][]
       }
       list_pending_join_requests: {
         Args: { p_family_id: string }
@@ -589,6 +896,23 @@ export type Database = {
         Args: { p_family_id: string; p_month: number; p_year: number }
         Returns: Json
       }
+      mark_notification_read: {
+        Args: { p_notification_id: string; p_read?: boolean }
+        Returns: Json
+      }
+      merge_categories: {
+        Args: {
+          p_family_id: string
+          p_idempotency_key: string
+          p_source_category_id: string
+          p_target_category_id: string
+        }
+        Returns: Json
+      }
+      preview_import_duplicates: {
+        Args: { p_family_id: string; p_fingerprints: string[] }
+        Returns: string[]
+      }
       remove_family_member: {
         Args: {
           p_family_id: string
@@ -609,6 +933,14 @@ export type Database = {
         }
         Returns: Json
       }
+      rollback_import_batch: {
+        Args: {
+          p_batch_id: string
+          p_family_id: string
+          p_idempotency_key: string
+        }
+        Returns: Json
+      }
       save_transaction: {
         Args: {
           p_account_id: string
@@ -625,6 +957,51 @@ export type Database = {
         }
         Returns: Json
       }
+      save_transaction_v2: {
+        Args: {
+          p_account_id: string
+          p_amount_minor: string
+          p_category_id: string
+          p_description: string
+          p_expected_version: number
+          p_family_id: string
+          p_idempotency_key: string
+          p_local_date: string
+          p_related_user_id: string
+          p_remarks: string
+          p_transaction_id: string
+          p_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Returns: Json
+      }
+      search_transactions_v2: {
+        Args: {
+          p_account_id?: string
+          p_category_id?: string
+          p_deleted_status?: string
+          p_end?: string
+          p_family_id: string
+          p_limit?: number
+          p_max_amount_minor?: string
+          p_member_id?: string
+          p_min_amount_minor?: string
+          p_offset?: number
+          p_search?: string
+          p_sort?: string
+          p_start?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
+      set_family_member_status: {
+        Args: {
+          p_family_id: string
+          p_idempotency_key: string
+          p_status: Database["public"]["Enums"]["member_status"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       set_transaction_deleted: {
         Args: {
           p_deleted: boolean
@@ -632,6 +1009,57 @@ export type Database = {
           p_family_id: string
           p_idempotency_key: string
           p_transaction_id: string
+        }
+        Returns: Json
+      }
+      transfer_family_ownership: {
+        Args: {
+          p_family_id: string
+          p_idempotency_key: string
+          p_new_owner_user_id: string
+        }
+        Returns: Json
+      }
+      update_account_extended: {
+        Args: {
+          p_account_id: string
+          p_account_type: string
+          p_display_credit_as_positive: boolean
+          p_family_id: string
+          p_idempotency_key: string
+          p_institution: string
+          p_name: string
+          p_sort_order: number
+        }
+        Returns: Json
+      }
+      update_category_extended: {
+        Args: {
+          p_category_id: string
+          p_color: string
+          p_family_id: string
+          p_idempotency_key: string
+          p_name: string
+          p_sort_order: number
+        }
+        Returns: Json
+      }
+      update_family_notes: {
+        Args: {
+          p_expected_version: number
+          p_family_id: string
+          p_idempotency_key: string
+          p_notes: string
+        }
+        Returns: Json
+      }
+      update_my_profile: {
+        Args: {
+          p_avatar_url: string
+          p_display_name: string
+          p_idempotency_key: string
+          p_locale: string
+          p_timezone: string
         }
         Returns: Json
       }

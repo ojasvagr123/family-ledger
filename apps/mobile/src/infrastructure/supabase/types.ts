@@ -5,6 +5,7 @@ export type FamilySummary = {
   id: string;
   name: string;
   currency_code: string;
+  currency_symbol: string;
   timezone: string;
   fiscal_start_month: number;
   role: MemberRole;

@@ -6,6 +6,7 @@ export const uuidSchema = z.uuid();
 export const createFamilySchema = z.object({
   name: z.string().trim().min(1).max(100),
   currencyCode: z.string().regex(/^[A-Z]{3}$/).default('INR'),
+  currencySymbol: z.string().trim().min(1).max(8).default('₹'),
   timezone: z.string().trim().min(1).max(100).default('Asia/Kolkata'),
   fiscalStartMonth: z.number().int().min(1).max(12).default(1),
   reportingStartYear: z.number().int().min(1900).max(2200),
@@ -47,3 +48,9 @@ export const minorAmountSchema = z.string().regex(/^[0-9]{1,15}$/).refine((value
 export const accountSchema = z.object({ familyId: uuidSchema, name: z.string().trim().min(1).max(80), accountType: z.enum(['CASH','SAVINGS','CURRENT','CREDIT_CARD','WALLET','OTHER']), openingDate: z.iso.date(), balanceMinor: z.string().regex(/^-?[0-9]{1,15}$/), idempotencyKey: uuidSchema });
 export const saveTransactionSchema = z.object({ familyId: uuidSchema, transactionId: uuidSchema.nullable(), expectedVersion: z.number().int().positive().nullable(), type: z.enum(['INCOME','EXPENSE']), localDate: z.iso.date(), amountMinor: minorAmountSchema, accountId: uuidSchema, categoryId: uuidSchema, description: z.string().trim().max(240), remarks: z.string().trim().max(2000), idempotencyKey: uuidSchema });
 export const deleteTransactionSchema = z.object({ familyId: uuidSchema, transactionId: uuidSchema, expectedVersion: z.number().int().positive(), deleted: z.boolean(), idempotencyKey: uuidSchema });
+export const createCategorySchema = z.object({ familyId: uuidSchema, type: z.enum(['INCOME','EXPENSE']), name: z.string().trim().min(1).max(80), idempotencyKey: uuidSchema });
+export const updateCategorySchema = z.object({ familyId: uuidSchema, categoryId: uuidSchema, name: z.string().trim().min(1).max(80), sortOrder: z.number().int().nonnegative(), idempotencyKey: uuidSchema });
+export const reorderCategoriesSchema = z.object({ familyId: uuidSchema, type: z.enum(['INCOME','EXPENSE']), categoryIds: z.array(uuidSchema).min(1), idempotencyKey: uuidSchema });
+export const updateAccountSchema = z.object({ familyId: uuidSchema, accountId: uuidSchema, name: z.string().trim().min(1).max(80), accountType: z.enum(['CASH','SAVINGS','CURRENT','CREDIT_CARD','WALLET','OTHER']), idempotencyKey: uuidSchema });
+export const updateFamilySettingsSchema = z.object({ familyId: uuidSchema, expectedVersion: z.number().int().positive(), name: z.string().trim().min(1).max(100), currencyCode: z.string().regex(/^[A-Z]{3}$/), currencySymbol: z.string().trim().min(1).max(8), timezone: z.string().trim().min(1).max(100), fiscalStartMonth: z.number().int().min(1).max(12), reportingStartYear: z.number().int().min(1900).max(2200), idempotencyKey: uuidSchema });
+export const changeMemberRoleSchema = z.object({ familyId: uuidSchema, userId: uuidSchema, role: z.enum(['ADMIN','MEMBER','VIEWER']), idempotencyKey: uuidSchema });

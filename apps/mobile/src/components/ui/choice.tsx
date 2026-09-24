@@ -1,6 +1,7 @@
-import { ScrollView, View } from 'react-native';
-import { AppButton } from './app-button';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from './app-text';
+import { palette, radius, spacing } from '@/constants/theme';
 export function Choice({ label, value, options, onChange }: { label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void }) {
-  return <View style={{ gap: 8 }}><AppText variant="caption">{label}</AppText><ScrollView horizontal showsHorizontalScrollIndicator><View style={{ flexDirection: 'row', gap: 8 }}>{options.map((option) => <AppButton key={option.value} label={`${option.value === value ? '✓ ' : ''}${option.label}`} kind={option.value === value ? 'primary' : 'secondary'} onPress={() => onChange(option.value)} />)}</View></ScrollView></View>;
+  return <View style={styles.group}><AppText variant="caption" style={styles.label}>{label}</AppText><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>{options.map((option) => { const selected = option.value === value; return <Pressable accessibilityRole="radio" accessibilityState={{ selected }} key={option.value} onPress={() => onChange(option.value)} style={({ pressed }) => [styles.pill, selected && styles.selected, pressed && styles.pressed]}><AppText variant="caption" style={[styles.pillText, selected && styles.selectedText]}>{selected ? '✓ ' : ''}{option.label}</AppText></Pressable>; })}</ScrollView></View>;
 }
+const styles = StyleSheet.create({ group: { gap: spacing.sm }, label: { fontWeight: '700' }, row: { gap: spacing.sm, paddingRight: spacing.lg }, pill: { minHeight: 42, justifyContent: 'center', paddingHorizontal: spacing.lg, borderRadius: radius.pill, borderWidth: 1, borderColor: palette.borderStrong, backgroundColor: palette.surface }, selected: { backgroundColor: palette.actionSoft, borderColor: palette.action }, selectedText: { color: palette.action, fontWeight: '800' }, pillText: { fontWeight: '600' }, pressed: { opacity: 0.75 } });

@@ -9,6 +9,13 @@
 - [x] Money/date regression tests
 - [x] Android and iOS JavaScript bundle exports
 - [x] Android native critical flow (Home, Activity, Report, Accounts, create/detail/delete)
+- [x] Product-completion and sample-family migration replay with 115 database assertions
+- [x] Modern mobile design system, dashboard and navigation smoke-tested on Android
+- [x] Atomic transfers, ownership/member lifecycle, notes, realtime invalidation and notifications
+- [x] Duplicate-safe CSV import batches with history and rollback
+- [x] Transaction and report CSV sharing
+- [x] Idempotent sample-family onboarding with representative accounts and transactions
+- [x] All 14 major Android routes and financial control totals verified after the UI refresh
 - [x] Final source validation after all patches
 - [ ] Manual TalkBack and VoiceOver accessibility smoke
 

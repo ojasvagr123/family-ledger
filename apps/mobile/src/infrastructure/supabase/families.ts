@@ -6,6 +6,7 @@ export type FamilyMemberSummary = {
   user_id: string;
   display_name: string;
   role: string;
+  status: string;
 };
 
 function unwrap<T>(data: T | null, error: { message: string } | null): T {
@@ -23,11 +24,17 @@ export async function createFamily(input: CreateFamilyInput): Promise<FamilySumm
   const { data, error } = await requireSupabase().rpc('create_family', {
     p_name: input.name,
     p_currency_code: input.currencyCode,
+    p_currency_symbol: input.currencySymbol,
     p_timezone: input.timezone,
     p_fiscal_start_month: input.fiscalStartMonth,
     p_reporting_start_year: input.reportingStartYear,
     p_idempotency_key: input.idempotencyKey,
   });
+  return unwrap(data as FamilySummary | null, error);
+}
+
+export async function createDemoFamily(idempotencyKey: string): Promise<FamilySummary> {
+  const { data, error } = await requireSupabase().rpc('create_demo_family', { p_idempotency_key: idempotencyKey });
   return unwrap(data as FamilySummary | null, error);
 }
 

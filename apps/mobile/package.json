@@ -12,6 +12,8 @@
     "expo-crypto": "~57.0.2",
     "expo-dev-client": "~57.0.18",
     "expo-device": "~57.0.1",
+    "expo-document-picker": "~57.0.2",
+    "expo-file-system": "~57.0.6",
     "expo-font": "~57.0.3",
     "expo-image": "~57.0.4",
     "expo-linking": "~57.0.9",
@@ -29,6 +31,7 @@
     "react-native-gesture-handler": "~2.32.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
     "react-native-url-polyfill": "^4.0.0",
     "zod": "^4.6.1"
   },

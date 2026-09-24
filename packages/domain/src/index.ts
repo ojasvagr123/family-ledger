@@ -36,10 +36,21 @@ export function decimalMoney(minor: string): string {
   return `${amount < 0n ? '-' : ''}${absolute / 100n}.${String(absolute % 100n).padStart(2, '0')}`;
 }
 
-export function formatMoney(minor: string, currency = 'INR'): string {
+export function suggestedCurrencySymbol(currency = 'INR'): string {
+  try {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' })
+      .formatToParts(0)
+      .find((part) => part.type === 'currency')?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
+export function formatMoney(minor: string, currency = 'INR', customSymbol?: string): string {
   const [whole, fraction] = decimalMoney(minor).split('.');
   const sign = minor.startsWith('-') ? '-' : '';
-  return `${currency} ${sign}${BigInt(whole.replace('-', '')).toLocaleString('en-IN')}.${fraction}`;
+  const symbol = customSymbol?.trim() || suggestedCurrencySymbol(currency);
+  return `${sign}${symbol}${BigInt(whole.replace('-', '')).toLocaleString('en-IN')}.${fraction}`;
 }
 
 export function isLocalDate(value: string): boolean {
@@ -52,4 +63,37 @@ export function localToday(timezone = 'Asia/Kolkata', instant = new Date()): str
   const parts = new Intl.DateTimeFormat('en', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(instant);
   const get = (type: string) => parts.find((part) => part.type === type)!.value;
   return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export type CsvDateOrder = 'AUTO' | 'YMD' | 'MDY' | 'DMY';
+
+export function detectCsvDelimiter(text: string): ',' | ';' | '\t' | '|' {
+  const sample = text.replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0] ?? '';
+  const candidates = [',', ';', '\t', '|'] as const;
+  const counts = candidates.map((delimiter) => { let count = 0; let quoted = false; for (let index = 0; index < sample.length; index += 1) { if (sample[index] === '"') quoted = !quoted; else if (!quoted && sample[index] === delimiter) count += 1; } return { delimiter, count }; });
+  return counts.reduce((best, item) => item.count > best.count ? item : best).delimiter;
+}
+
+export function parseDelimitedText(text: string, delimiter = detectCsvDelimiter(text)): string[][] {
+  const rows: string[][] = []; let row: string[] = []; let cell = ''; let quoted = false; const clean = text.replace(/^\uFEFF/, '');
+  for (let index = 0; index < clean.length; index += 1) {
+    const character = clean[index];
+    if (character === '"' && quoted && clean[index + 1] === '"') { cell += '"'; index += 1; }
+    else if (character === '"') quoted = !quoted;
+    else if (character === delimiter && !quoted) { row.push(cell.trim()); cell = ''; }
+    else if ((character === '\n' || character === '\r') && !quoted) { if (character === '\r' && clean[index + 1] === '\n') index += 1; row.push(cell.trim()); if (row.some((value) => value !== '')) rows.push(row); row = []; cell = ''; }
+    else cell += character;
+  }
+  row.push(cell.trim()); if (row.some((value) => value !== '')) rows.push(row);
+  return rows;
+}
+
+export function normalizeImportedDate(value: string, order: CsvDateOrder = 'AUTO'): string {
+  const clean = value.trim(); if (isLocalDate(clean)) return clean;
+  const parts = clean.split(/[\/.-]/).map((part) => Number(part.trim())); if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part))) return clean;
+  let year: number; let month: number; let day: number;
+  if (order === 'YMD' || (order === 'AUTO' && parts[0] >= 1900)) [year, month, day] = parts;
+  else { year = parts[2] < 100 ? 2000 + parts[2] : parts[2]; if (order === 'DMY' || (order === 'AUTO' && parts[0] > 12)) [day, month] = parts; else [month, day] = parts; }
+  const result = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return isLocalDate(result) ? result : clean;
 }

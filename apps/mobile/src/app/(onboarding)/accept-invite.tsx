@@ -17,7 +17,7 @@ export default function AcceptInviteScreen() {
   const [token, setToken] = useState(params.token ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [inspection, setInspection] = useState('');
+  const [inspection, setInspection] = useState<{ status: string; familyName?: string; inviterName?: string; expiresAt?: string; usesRemaining?: number } | null>(null);
   const request = useRef<{ token: string; key: string } | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -42,7 +42,7 @@ export default function AcceptInviteScreen() {
   }
   async function inspect() {
     setLoading(true); setError(null);
-    try { const clean = token.trim().includes('/invite/') ? token.trim().split('/invite/')[1].split(/[?#]/)[0] : token.trim(); const result = await rpc<{ status: string }>('inspect_invitation', { p_token: clean }); setInspection(result.status.replaceAll('_', ' ')); } catch { setError('Unable to check invitation. Sign in and check your connection.'); } finally { setLoading(false); }
+    try { const clean = token.trim().includes('/invite/') ? token.trim().split('/invite/')[1].split(/[?#]/)[0] : token.trim(); const result = await rpc<{ status: string; familyName?: string; inviterName?: string; expiresAt?: string; usesRemaining?: number }>('inspect_invitation', { p_token: clean }); setInspection(result); } catch { setError('Unable to check invitation. Sign in and check your connection.'); } finally { setLoading(false); }
   }
-  return <Screen title="Join a family" subtitle="Joining creates a pending request. No financial data is visible until approval.">{error && <Notice tone="danger" message={error} />}{inspection && <Notice message={`Invitation status: ${inspection}`} />}<AppField label="Invitation link or token" value={token} onChangeText={setToken} autoCapitalize="none" autoCorrect={false} multiline />{user && <AppButton label="Check invitation" kind="secondary" loading={loading} onPress={inspect} />}<AppButton label={user ? 'Request access' : 'Sign in to continue'} loading={loading} onPress={submit} /><AppButton label="Back" kind="secondary" onPress={() => router.back()} /></Screen>;
+  return <Screen title="Join a family" subtitle="Invitation approval">{error && <Notice tone="danger" message={error} />}{inspection && <Notice tone={inspection.status === 'VALID' ? 'info' : 'warning'} message={inspection.status === 'VALID' ? `${inspection.inviterName ?? 'A family member'} invited you to ${inspection.familyName ?? 'this family'}. The link expires ${inspection.expiresAt ? new Date(inspection.expiresAt).toLocaleString() : 'soon'}.` : `Invitation status: ${inspection.status.replaceAll('_', ' ')}`} />}<AppField label="Invitation link or token" value={token} onChangeText={(value) => { setToken(value); setInspection(null); }} autoCapitalize="none" autoCorrect={false} multiline />{user && <AppButton label="Check invitation" kind="secondary" loading={loading} onPress={inspect} />}<AppButton label={user ? 'Request access' : 'Sign in to continue'} loading={loading} disabled={inspection !== null && inspection.status !== 'VALID'} onPress={submit} /><AppButton label="Back" kind="secondary" onPress={() => router.back()} /></Screen>;
 }

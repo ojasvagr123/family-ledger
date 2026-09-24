@@ -21,7 +21,8 @@ async function identity(client, email) {
 }
 async function rpc(client,name,args) { const result = await client.rpc(name,args); if(result.error) throw new Error(`${name}: ${result.error.message}`); return result.data; }
 const o = await identity(owner,ownerEmail); const m = await identity(member,memberEmail);
-const family = await rpc(owner,'create_family',{p_name:`Pilot QA ${suffix}`,p_currency_code:'INR',p_timezone:'Asia/Kolkata',p_fiscal_start_month:1,p_reporting_start_year:2026,p_idempotency_key:randomUUID()});
+const family = await rpc(owner,'create_family',{p_name:`Pilot QA ${suffix}`,p_currency_code:'INR',p_currency_symbol:'₹',p_timezone:'Asia/Kolkata',p_fiscal_start_month:1,p_reporting_start_year:2026,p_idempotency_key:randomUUID()});
+assert.equal(family.currency_symbol,'₹');
 const invite = await rpc(owner,'create_invitation',{p_family_id:family.id,p_expires_in_hours:72,p_max_uses:1,p_idempotency_key:randomUUID()});
 assert.equal((await rpc(member,'inspect_invitation',{p_token:invite.token})).status,'VALID');
 const join = await rpc(member,'request_join',{p_token:invite.token,p_idempotency_key:randomUUID()});
