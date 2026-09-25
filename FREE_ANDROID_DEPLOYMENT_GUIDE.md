@@ -1,8 +1,23 @@
 # FamilyLedger: Free Android Deployment Guide
 
-Last verified: 24 September 2026  
+Last verified: 25 September 2026
 Application: FamilyLedger, Expo SDK 57 / React Native / Supabase  
 Primary target: installable Android APK for family members and pilot testers
+
+## Deployment progress
+
+Status recorded on 25 September 2026:
+
+- [x] Step 1 — Local release gate completed.
+- [x] Step 2 — Production Supabase project created, linked, and migrations deployed.
+- [x] Step 3 — Production authentication URLs, email template, and custom SMTP configured.
+- [ ] Step 4 — Connect the mobile application to the production Supabase URL and publishable key.
+- [ ] Step 5 — Initialize/link the Expo EAS project.
+- [ ] Step 6 — Configure the five EAS `preview` environment variables.
+- [ ] Step 7 — Build and download the signed Android preview APK.
+- [ ] Step 8 — Complete two-device acceptance testing and distribute the private pilot.
+
+The next active task is [Section 8](#8-collect-the-public-supabase-app-values). Before starting the cloud build, also verify the RLS-enabled production tables and send one real authentication email to a non-team address.
 
 ## 1. What “free deployment” means
 
@@ -120,9 +135,22 @@ Start Docker Desktop and let its Linux engine finish starting. Then run:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Users\lenovo\Documents\ChatGPT\expense management'
-pnpm install --frozen-lockfile
-pnpm db:start
+$familyLedgerCorepack = 'C:\Program Files\nodejs\corepack.cmd'
+& $familyLedgerCorepack pnpm --version
+& $familyLedgerCorepack pnpm install --frozen-lockfile
+& '.\node_modules\.bin\supabase.CMD' start
 ```
+
+This computer has Node.js and Corepack installed, but the standalone `pnpm` command may not be on the PowerShell `PATH`. Calling Corepack by its full path avoids a global installation or Windows `PATH` change. The Supabase executable is then called directly so pnpm does not try to launch a second, unavailable `pnpm` process.
+
+If Corepack cannot download pnpm, use this one-command fallback instead:
+
+```powershell
+npx --yes pnpm@11.19.0 install --frozen-lockfile
+& '.\node_modules\.bin\supabase.CMD' start
+```
+
+The required pnpm version is declared in the repository's root `package.json`.
 
 Run the JavaScript/TypeScript checks:
 
@@ -610,24 +638,25 @@ Normal TestFlight/App Store distribution requires Apple Developer Program member
 
 - [ ] Source changes reviewed and committed
 - [ ] Private off-computer source backup created
-- [ ] `.env` confirmed ignored
-- [ ] TypeScript passed
-- [ ] ESLint passed with zero warnings
-- [ ] Domain tests passed
-- [ ] 115 database assertions passed
-- [ ] All 9 migrations replayed cleanly
+- [x] `.env` confirmed ignored
+- [x] TypeScript passed
+- [x] ESLint passed with zero warnings
+- [x] Domain tests passed
+- [x] 115 database assertions passed
+- [x] All 9 migrations replayed cleanly
 
 ### Hosted backend
 
-- [ ] Supabase Free project created in the correct region
-- [ ] Database password stored safely
-- [ ] Local project linked to the correct project reference
-- [ ] Migration dry run reviewed
-- [ ] Migrations `0001`–`0009` pushed
+- [x] Supabase Free project created in the correct region
+- [x] Database password stored safely
+- [x] Local project linked to the correct project reference
+- [x] Migration dry run reviewed
+- [x] Migrations `0001`–`0009` pushed
 - [ ] RLS-enabled tables verified
-- [ ] Auth site URL and redirect URLs configured
-- [ ] Magic-link/OTP email template configured
-- [ ] Custom SMTP configured and tested for non-team emails
+- [x] Auth site URL and redirect URLs configured
+- [x] Magic-link/OTP email template configured
+- [x] Custom SMTP configured
+- [ ] Custom SMTP tested with a non-team email address
 - [ ] Project URL and publishable key collected
 - [ ] No secret/service-role key placed in mobile configuration
 
@@ -658,4 +687,3 @@ Normal TestFlight/App Store distribution requires Apple Developer Program member
 - [ ] Pilot installation link shared only with intended testers
 
 When every applicable checkbox is complete, the free Android pilot is deployed.
-

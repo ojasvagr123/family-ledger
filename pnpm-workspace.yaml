@@ -8,7 +8,8 @@ autoInstallPeers: false
 virtualStoreDir: C:/fl-pnpm
 
 allowBuilds:
-  unrs-resolver: set this to true or false
+  # Native resolver package required by the Expo/Metro dependency graph.
+  unrs-resolver: true
 
 onlyBuiltDependencies:
   - esbuild
